@@ -1,0 +1,10 @@
+# Nav2 metadata for the unchanged Phase 5B sensor-derived PGM.
+# The saved map's free_thresh 0.25 classifies gray 205 (unknown) as free in
+# Humble Map Server. This lower threshold preserves those 275 unknown cells.
+image: /home/ik/robotics_competition_ws/maps/competition_mapping/20261125T103259Z_572d1928/map.pgm
+mode: trinary
+resolution: 0.05
+origin: [-0.562, -0.568, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.19

@@ -1,0 +1,26 @@
+{
+  "classification": "preliminary_stationary",
+  "autonomous_motion_enabled": false,
+  "map_frame": "map",
+  "map_stamp": {
+    "sec": 601,
+    "nanosec": 300000000
+  },
+  "resolution_m": 0.05000000074505806,
+  "width_cells": 118,
+  "height_cells": 78,
+  "origin": {
+    "x": -0.5590354817777622,
+    "y": -0.5538810710246376
+  },
+  "unknown_cells": 6638,
+  "free_cells": 2424,
+  "occupied_cells": 142,
+  "coverage_note": "Known fraction of current grid extent, not validated arena coverage",
+  "exploration_results": "No autonomous motion or cube displacement test performed",
+  "files": [
+    "map.pgm",
+    "map.yaml",
+    "slam_mapping.yaml"
+  ]
+}

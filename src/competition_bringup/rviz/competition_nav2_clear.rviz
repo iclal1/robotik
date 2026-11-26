@@ -1,0 +1,226 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Class: rviz_default_plugins/Grid
+      Name: Arena grid
+      Enabled: true
+      Cell Size: 0.5
+      Plane Cell Count: 16
+      Color: 140; 140; 140
+      Value: true
+    - Class: rviz_default_plugins/Map
+      Name: Saved occupancy map
+      Enabled: true
+      Alpha: 0.8
+      Color Scheme: map
+      Draw Behind: true
+      Topic:
+        Value: /map
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Depth: 1
+      Use Timestamp: false
+      Value: true
+    - Class: rviz_default_plugins/RobotModel
+      Name: Robot model
+      Enabled: true
+      Description Source: Topic
+      Description Topic:
+        Value: /robot_description
+        Durability Policy: Transient Local
+        Reliability Policy: Reliable
+        History Policy: Keep Last
+        Depth: 1
+      Visual Enabled: true
+      Collision Enabled: false
+      Value: true
+    - Class: rviz_default_plugins/TF
+      Name: Coordinate frames
+      Enabled: true
+      Show Axes: false
+      Show Arrows: false
+      Show Names: false
+      Marker Scale: 0.25
+      Value: true
+    - Class: rviz_default_plugins/LaserScan
+      Name: LiDAR scan
+      Enabled: true
+      Topic:
+        Value: /scan
+        Reliability Policy: Best Effort
+        History Policy: Keep Last
+        Durability Policy: Volatile
+        Depth: 5
+      Style: Points
+      Size (Pixels): 2
+      Color Transformer: FlatColor
+      Color: 255; 230; 75
+      Value: true
+    - Class: rviz_default_plugins/Odometry
+      Name: Wheel odometry
+      Enabled: true
+      Covariance:
+        Value: false
+      Topic:
+        Value: /odom
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 10
+      Shape:
+        Value: Arrow
+        Color: 255; 80; 0
+      Position Tolerance: 0.05
+      Angle Tolerance: 0.05
+      Keep: 30
+      Value: true
+    - Class: rviz_default_plugins/Image
+      Name: RGB camera
+      Enabled: true
+      Topic:
+        Value: /camera/image_raw
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 2
+      Queue Size: 2
+      Value: true
+    - Class: rviz_default_plugins/Image
+      Name: Cube detections (annotated)
+      Enabled: true
+      Topic:
+        Value: /cube_detector/image_annotated
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 2
+      Queue Size: 2
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Estimated cube positions
+      Enabled: true
+      Topic:
+        Value: /cube_detector/markers
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 2
+      Value: true
+    - Class: rviz_default_plugins/Path
+      Name: Nav2 global path
+      Enabled: true
+      Topic:
+        Value: /plan
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Color: 40; 220; 255
+      Line Style: Lines
+      Line Width: 0.04
+      Value: true
+    - Class: rviz_default_plugins/Pose
+      Name: Nav2 goal pose
+      Enabled: true
+      Topic:
+        Value: /goal_pose
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Depth: 1
+      Color: 255; 170; 20
+      Value: true
+    - Class: rviz_default_plugins/MarkerArray
+      Name: Cube exclusion and safety markers
+      Enabled: true
+      Topic:
+        Value: /nav2/safety_markers
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Value: true
+    - Class: rviz_default_plugins/PoseWithCovariance
+      Name: AMCL localization
+      Enabled: true
+      Covariance:
+        Value: false
+      Topic:
+        Value: /amcl_pose
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 10
+      Value: true
+    - Class: rviz_default_plugins/Map
+      Name: Nav2 global costmap
+      Enabled: true
+      Alpha: 0.25
+      Color Scheme: costmap
+      Topic:
+        Value: /global_costmap/costmap
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Depth: 1
+      Value: true
+    - Class: rviz_default_plugins/Map
+      Name: Nav2 local costmap
+      Enabled: true
+      Alpha: 0.35
+      Color Scheme: costmap
+      Topic:
+        Value: /local_costmap/costmap
+        Reliability Policy: Reliable
+        Durability Policy: Transient Local
+        History Policy: Keep Last
+        Depth: 1
+      Value: true
+    - Class: rviz_default_plugins/Path
+      Name: Executed robot trajectory
+      Enabled: true
+      Topic:
+        Value: /nav2/trajectory
+        Reliability Policy: Reliable
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Depth: 1
+      Color: 255; 120; 40
+      Line Style: Lines
+      Line Width: 0.04
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 35; 38; 43
+    Fixed Frame: map
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+  Transformation:
+    Current:
+      Class: rviz_default_plugins/TF
+  Value: true
+  Views:
+    Current:
+      Class: rviz_default_plugins/TopDownOrtho
+      Name: Arena overview
+      Angle: 0
+      Scale: 90
+      Target Frame: <Fixed Frame>
+      X: 2.4
+      Y: 1.4
+      Value: TopDownOrtho (rviz_default_plugins)
+    Saved: ~
+Window Geometry:
+  Height: 900
+  Width: 1350

@@ -1,0 +1,28 @@
+{
+  "label": "planning_only_second_snapshot",
+  "classification": "autonomous_exploration_snapshot",
+  "map_frame": "map",
+  "map_stamp": {
+    "sec": 411,
+    "nanosec": 200000000
+  },
+  "resolution_m": 0.05000000074505806,
+  "width_cells": 118,
+  "height_cells": 78,
+  "origin": {
+    "x": -0.5590354817777622,
+    "y": -0.5538810710246376
+  },
+  "known_cells": 2566,
+  "unknown_cells": 6638,
+  "free_cells": 2424,
+  "occupied_cells": 142,
+  "exploration_status": null,
+  "coverage_note": "Known fraction of map extent, not arena coverage",
+  "files": [
+    "map.pgm",
+    "map.yaml",
+    "occupancy.npy",
+    "slam_mapping.yaml"
+  ]
+}

@@ -1,0 +1,10 @@
+# Portable Nav2 metadata example for the unchanged original map.pgm.
+# The 0.19 threshold retains the 275 gray-205 unknown cells in Humble Map Server.
+# Use via competition_nav2.launch.py map:=<absolute path to this file>.
+image: map.pgm
+mode: trinary
+resolution: 0.05
+origin: [-0.562, -0.568, 0]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.19

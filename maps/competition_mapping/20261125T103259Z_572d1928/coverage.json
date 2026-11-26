@@ -1,0 +1,55 @@
+{
+  "map_yaml": "/home/ik/robotics_competition_ws/maps/competition_mapping/20261125T103259Z_572d1928/map.yaml",
+  "resolution_m": 0.05,
+  "origin": [
+    -0.562,
+    -0.568,
+    0
+  ],
+  "width_cells": 119,
+  "height_cells": 79,
+  "known_cells": 9126,
+  "unknown_cells": 275,
+  "free_cells": 8519,
+  "occupied_cells": 607,
+  "known_grid_fraction": 0.9707477927880013,
+  "start_reachable_free_cells": 8499,
+  "start_reachable_fraction_of_free": 0.9976523066087569,
+  "regions": {
+    "west_start_lane": {
+      "cells": 3666,
+      "known_cells": 3666,
+      "known_fraction": 1.0
+    },
+    "central_opening": {
+      "cells": 816,
+      "known_cells": 808,
+      "known_fraction": 0.9901960784313726
+    },
+    "east_target_lane": {
+      "cells": 2886,
+      "known_cells": 2752,
+      "known_fraction": 0.9535689535689535
+    },
+    "red_target_vicinity": {
+      "cells": 160,
+      "known_cells": 159,
+      "known_fraction": 0.99375
+    },
+    "green_target_vicinity": {
+      "cells": 160,
+      "known_cells": 160,
+      "known_fraction": 1.0
+    },
+    "blue_target_vicinity": {
+      "cells": 160,
+      "known_cells": 160,
+      "known_fraction": 1.0
+    }
+  },
+  "coverage_note": "Known fraction of grid and named regions; this is not proof of safe robot-footprint reachability.",
+  "mapping_method": "SLAM Toolbox sensor-derived occupancy grid",
+  "saved_utc": "2026-11-25T10:33:00.228601+00:00",
+  "source_topic": "/map",
+  "competition_world_used_as_map_input": false
+}

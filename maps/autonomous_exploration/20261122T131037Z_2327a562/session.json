@@ -1,0 +1,53 @@
+{
+  "label": "planning_only_blocked",
+  "classification": "autonomous_exploration_snapshot",
+  "map_frame": "map",
+  "map_stamp": {
+    "sec": 77,
+    "nanosec": 100000000
+  },
+  "resolution_m": 0.05000000074505806,
+  "width_cells": 118,
+  "height_cells": 78,
+  "origin": {
+    "x": -0.5590354817777622,
+    "y": -0.5538810710246376
+  },
+  "known_cells": 2566,
+  "unknown_cells": 6638,
+  "free_cells": 2424,
+  "occupied_cells": 142,
+  "exploration_status": {
+    "mode": "planning_only",
+    "motion_enabled": false,
+    "blockers": [
+      "cube_clearance_not_validated",
+      "red_cube_not_localized",
+      "green_cube_not_localized",
+      "motion_opt_in_required"
+    ],
+    "known_grid_fraction": 0.2787918296392873,
+    "goal": [
+      0.21596452977063774,
+      0.22111894052376235
+    ],
+    "path_cells": 5,
+    "cube_tracks": [
+      "blue"
+    ],
+    "planning_ms": 0.8937689999584109,
+    "replans": 5,
+    "failed_goals": 0,
+    "last_command": [
+      0.0,
+      0.0
+    ]
+  },
+  "coverage_note": "Known fraction of map extent, not arena coverage",
+  "files": [
+    "map.pgm",
+    "map.yaml",
+    "occupancy.npy",
+    "slam_mapping.yaml"
+  ]
+}

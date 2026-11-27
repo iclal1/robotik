@@ -24,6 +24,11 @@ v3: kirmizi/mavi ilk yaklasma noktasi kup ile kose duvari arasinda sikisik
 Artik Nav2 yalnizca acik bir bekleme noktasina (-2.35, +-1.40) gider (donme
 payi 21 cm); kalan 0.4 m'yi robot dogrudan gider (ayak izi payi 9 cm).
 Sure hem duvar saati hem simulasyon saati ile yazilir.
+
+v4: kirmizi 3. parcaya da Nav2 yerine dogrudan gidilir (once 8 cm ileri,
+B duvarindan uzaklas; ayak izi payi 7.5 cm). Robot zaten itme hattindaysa
+(yan sapma < 2.5 cm) ayrica hizalanma hareketi yapilmaz; kalan kucuk
+sapmayi itme sirasindaki hat takibi duzeltir.
 """
 import math
 import re
@@ -55,6 +60,7 @@ CONTACT = HALF + FRONT
 # kirmizi/mavi'nin ilk parcasinda robot kupun bati tarafindan gelir.
 # Son alan 'kendi': 'ara' ise Nav2 yalnizca ara noktalara gider (sonuncusu
 # acik bir bekleme noktasi), yaklasma noktasina robot dogrudan gider.
+# Liste ise once bu noktalara, sonra yaklasma noktasina dogrudan gidilir.
 # True ise yaklasma noktasina Nav2 yerine dogrudan gidilir
 # (yalnizca kisa ve payi genis atlamalar: kirmizi/mavi 1->2, pay ~14 cm).
 # 2->3 atlamasinda pay ~4 cm (B duvari yakin), orada Nav2 kullanilir.
@@ -62,7 +68,7 @@ ROTALAR = {
     'yesil':   ('green', (2.35, 0.0),  [((-1.60, 0.00), (2.35, -0.10), 0.70, [], False)]),
     'kirmizi': ('red',   (2.35, 1.2),  [((-1.60, 1.20), (-0.40, -0.05), 0.55, [(-2.30, 0.55, 90), (-2.35, 1.40, 90)], 'ara'),
                                         ((-0.40, -0.05), (1.60, -0.10), 0.60, [], True),
-                                        ((1.60, -0.10), (2.35, 1.20), 0.50, [], False)]),
+                                        ((1.60, -0.10), (2.35, 1.20), 0.55, [], [(1.10, -0.10)])]),
     'mavi':    ('blue',  (2.35, -1.2), [((-1.60, -1.20), (-0.45, -0.05), 0.55, [(-2.30, -0.55, -90), (-2.35, -1.40, -90)], 'ara'),
                                         ((-0.45, -0.05), (1.60, -0.40), 0.60, [], True),
                                         ((1.60, -0.40), (2.35, -1.20), 0.50, [], False)]),
@@ -320,6 +326,8 @@ class Teslim(Node):
             ok = self.adim(i, 'Nav2 yaklasma (bekleme noktasina)', self.nav2_noktalar, noktalar)
             self.adim(i, 'dogrudan yaklasma', self.noktaya_git, *A)
         elif kendi:
+            for M in (kendi if isinstance(kendi, list) else []):
+                self.adim(i, 'dogrudan yaklasma (ara)', self.noktaya_git, *M)
             self.adim(i, 'dogrudan yaklasma', self.noktaya_git, *A)
             ok = True
         else:
@@ -334,7 +342,14 @@ class Teslim(Node):
         u2 = (math.cos(h2), math.sin(h2))
         on = min(0.50, dapp)
         S = (C[0] - on * u2[0], C[1] - on * u2[1])
-        self.adim(i, 'hizalanma', self.noktaya_git, *S)
+        # Robot zaten hattin uzerinde ve kupun gerisindeyse ayrica hizalanma yapma
+        p = self.wait_pose()
+        yan = -(p[0] - C[0]) * u2[1] + (p[1] - C[1]) * u2[0]
+        geride = -((p[0] - C[0]) * u2[0] + (p[1] - C[1]) * u2[1])
+        if abs(yan) < 0.025 and abs(wrap(h2 - p[2])) < 0.15 and geride > CONTACT + 0.05:
+            print('     hatta: yan sapma %.1f cm, hizalanma atlandi' % (100 * yan))
+        else:
+            self.adim(i, 'hizalanma', self.noktaya_git, *S)
         self.adim(i, 'donme', self.don, h2)
         robot_son = (Q[0] - CONTACT * u2[0], Q[1] - CONTACT * u2[1])
         sapma = self.adim(i, 'itme', self.hat_boyunca_it, C, h2, robot_son)
@@ -390,7 +405,7 @@ class Teslim(Node):
         print('\n===== SURE DAGILIMI =====')
         tur = {}
         for _, _, ad, dt in self.sureler:
-            k = 'Nav2 yaklasma' if ad.startswith('Nav2') else ad
+            k = 'Nav2 yaklasma' if ad.startswith('Nav2') else ('dogrudan yaklasma' if ad.startswith('dogrudan') else ad)
             tur[k] = tur.get(k, 0) + dt
         for k, v in sorted(tur.items(), key=lambda x: -x[1]):
             print('  %-18s %6.0f sn  (%%%.0f)' % (k, v, 100 * v / toplam))

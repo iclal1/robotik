@@ -68,9 +68,6 @@ def make_nodes(context):
              parameters=[{'use_sim_time':True}],output='screen'),
         Node(package='competition_bringup',executable='cube_tracking_diagnostics.py',
              parameters=[{'use_sim_time':True}],output='screen'),
-        Node(package='competition_bringup',executable='nav2_safety_supervisor.py',
-             parameters=[{'use_sim_time':True,'enable_motion':enabled}],
-             output='screen'),
         Node(package='nav2_map_server',executable='map_server',name='map_server',
              parameters=[params,{'yaml_filename':map_yaml}],output='screen'),
         Node(package='nav2_amcl',executable='amcl',name='amcl',
@@ -78,6 +75,13 @@ def make_nodes(context):
         Node(package='competition_bringup',executable='initialize_amcl_pose.py',
              parameters=[{'use_sim_time':True}],output='screen'),
     ]
+    # The supervisor gates pre-push Nav2 motion. The pushing task
+    # (competition_task.launch.py) sets supervisor:=false and arbitrates
+    # /nav2_cmd_vel itself; cmd_vel_guard stays the final stage in both cases.
+    if LaunchConfiguration('supervisor').perform(context).lower() in ('true','1'):
+        nodes.append(Node(package='competition_bringup',executable='nav2_safety_supervisor.py',
+                          parameters=[{'use_sim_time':True,'enable_motion':enabled}],
+                          output='screen'))
     lifecycle = ['map_server','amcl']
     if navigation:
         nodes.extend([
@@ -117,6 +121,7 @@ def generate_launch_description():
         DeclareLaunchArgument('use_sim_time',default_value='true'),
         DeclareLaunchArgument('enable_motion',default_value='false'),
         DeclareLaunchArgument('start_navigation',default_value='true'),
+        DeclareLaunchArgument('supervisor',default_value='true'),
         DeclareLaunchArgument('map',default_value=str(DEFAULT_MAP)),
         OpaqueFunction(function=preflight),
         OpaqueFunction(function=make_nodes),simulation,rviz,

@@ -18,6 +18,17 @@ v2 (sure kisaltma): her adimin suresi yazilir; ara Gazebo olcumleri kapali
 (--olc ile acilir); kamera yalnizca ilk parcada; ara nokta + yaklasma tek
 Nav2 hedefinde (navigate_through_poses); kirmizi/mavi 2. parcaya kisa
 mesafe oldugu icin Nav2 yerine dogrudan gidilir (ayak izi payi 14 cm).
+
+v3: kirmizi/mavi ilk yaklasma noktasi kup ile kose duvari arasinda sikisik
+(ayak izi payi 1.5 cm) oldugu icin Nav2 oraya 240 sn ugrasip basaramiyordu.
+Artik Nav2 yalnizca acik bir bekleme noktasina (-2.35, +-1.40) gider (donme
+payi 21 cm); kalan 0.4 m'yi robot dogrudan gider (ayak izi payi 9 cm).
+Sure hem duvar saati hem simulasyon saati ile yazilir.
+
+v4: kirmizi 3. parcaya da Nav2 yerine dogrudan gidilir (once 8 cm ileri,
+B duvarindan uzaklas; ayak izi payi 7.5 cm). Robot zaten itme hattindaysa
+(yan sapma < 2.5 cm) ayrica hizalanma hareketi yapilmaz; kalan kucuk
+sapmayi itme sirasindaki hat takibi duzeltir.
 """
 import math
 import re
@@ -32,6 +43,8 @@ from geometry_msgs.msg import PoseStamped
 from nav2_msgs.action import NavigateThroughPoses, NavigateToPose
 from rclpy.action import ActionClient
 from rclpy.node import Node
+from rclpy.parameter import Parameter
+from rosgraph_msgs.msg import Clock
 from rclpy.time import Time
 from tf2_ros import Buffer, TransformListener
 from vision_msgs.msg import Detection3DArray
@@ -45,15 +58,18 @@ CONTACT = HALF + FRONT
 # Her parca: (kup baslangic, kup bitis, yaklasma mesafesi, Nav2 ara noktalari)
 # Ara noktalar robotun diger kuplere carpmadan yaklasma noktasina gelmesi icin:
 # kirmizi/mavi'nin ilk parcasinda robot kupun bati tarafindan gelir.
-# Son alan 'kendi': True ise yaklasma noktasina Nav2 yerine dogrudan gidilir
+# Son alan 'kendi': 'ara' ise Nav2 yalnizca ara noktalara gider (sonuncusu
+# acik bir bekleme noktasi), yaklasma noktasina robot dogrudan gider.
+# Liste ise once bu noktalara, sonra yaklasma noktasina dogrudan gidilir.
+# True ise yaklasma noktasina Nav2 yerine dogrudan gidilir
 # (yalnizca kisa ve payi genis atlamalar: kirmizi/mavi 1->2, pay ~14 cm).
 # 2->3 atlamasinda pay ~4 cm (B duvari yakin), orada Nav2 kullanilir.
 ROTALAR = {
     'yesil':   ('green', (2.35, 0.0),  [((-1.60, 0.00), (2.35, -0.10), 0.70, [], False)]),
-    'kirmizi': ('red',   (2.35, 1.2),  [((-1.60, 1.20), (-0.40, -0.05), 0.45, [(-2.30, 0.55, 90)], False),
+    'kirmizi': ('red',   (2.35, 1.2),  [((-1.60, 1.20), (-0.40, -0.05), 0.55, [(-2.30, 0.55, 90), (-2.35, 1.40, 90)], 'ara'),
                                         ((-0.40, -0.05), (1.60, -0.10), 0.60, [], True),
-                                        ((1.60, -0.10), (2.35, 1.20), 0.50, [], False)]),
-    'mavi':    ('blue',  (2.35, -1.2), [((-1.60, -1.20), (-0.45, -0.05), 0.45, [(-2.30, -0.55, -90)], False),
+                                        ((1.60, -0.10), (2.35, 1.20), 0.55, [], [(1.10, -0.10)])]),
+    'mavi':    ('blue',  (2.35, -1.2), [((-1.60, -1.20), (-0.45, -0.05), 0.55, [(-2.30, -0.55, -90), (-2.35, -1.40, -90)], 'ara'),
                                         ((-0.45, -0.05), (1.60, -0.40), 0.60, [], True),
                                         ((1.60, -0.40), (2.35, -1.20), 0.50, [], False)]),
 }
@@ -79,7 +95,8 @@ def gazebo_pose(name):
 
 class Teslim(Node):
     def __init__(self):
-        super().__init__('teslim')
+        super().__init__('teslim', parameter_overrides=[
+            Parameter('use_sim_time', Parameter.Type.BOOL, True)])
         self.nav = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.navp = ActionClient(self, NavigateThroughPoses, 'navigate_through_poses')
         self.sureler = []   # (renk, parca, adim, sn)
@@ -91,6 +108,11 @@ class Teslim(Node):
         self.det = None
         self.det_time = 0.0
         self.create_subscription(Detection3DArray, '/cube_detector/detections_3d', self.on_det, 5)
+        self.sim = 0.0
+        self.create_subscription(Clock, '/clock', self.on_clock, 10)
+
+    def on_clock(self, msg):
+        self.sim = msg.clock.sec + msg.clock.nanosec * 1e-9
 
     def on_det(self, msg):
         for d in msg.detections:
@@ -299,7 +321,13 @@ class Teslim(Node):
         ux, uy = math.cos(h), math.sin(h)
         A = (P[0] - dapp * ux, P[1] - dapp * uy)
         print('  parca %d: (%.2f, %.2f) -> (%.2f, %.2f), yon %.0f derece' % (i, P[0], P[1], Q[0], Q[1], math.degrees(h)))
-        if kendi:
+        if kendi == 'ara':
+            noktalar = [(wx, wy, math.radians(wd)) for (wx, wy, wd) in ara]
+            ok = self.adim(i, 'Nav2 yaklasma (bekleme noktasina)', self.nav2_noktalar, noktalar)
+            self.adim(i, 'dogrudan yaklasma', self.noktaya_git, *A)
+        elif kendi:
+            for M in (kendi if isinstance(kendi, list) else []):
+                self.adim(i, 'dogrudan yaklasma (ara)', self.noktaya_git, *M)
             self.adim(i, 'dogrudan yaklasma', self.noktaya_git, *A)
             ok = True
         else:
@@ -314,7 +342,14 @@ class Teslim(Node):
         u2 = (math.cos(h2), math.sin(h2))
         on = min(0.50, dapp)
         S = (C[0] - on * u2[0], C[1] - on * u2[1])
-        self.adim(i, 'hizalanma', self.noktaya_git, *S)
+        # Robot zaten hattin uzerinde ve kupun gerisindeyse ayrica hizalanma yapma
+        p = self.wait_pose()
+        yan = -(p[0] - C[0]) * u2[1] + (p[1] - C[1]) * u2[0]
+        geride = -((p[0] - C[0]) * u2[0] + (p[1] - C[1]) * u2[1])
+        if abs(yan) < 0.025 and abs(wrap(h2 - p[2])) < 0.15 and geride > CONTACT + 0.05:
+            print('     hatta: yan sapma %.1f cm, hizalanma atlandi' % (100 * yan))
+        else:
+            self.adim(i, 'hizalanma', self.noktaya_git, *S)
         self.adim(i, 'donme', self.don, h2)
         robot_son = (Q[0] - CONTACT * u2[0], Q[1] - CONTACT * u2[1])
         sapma = self.adim(i, 'itme', self.hat_boyunca_it, C, h2, robot_son)
@@ -343,7 +378,14 @@ class Teslim(Node):
         print('  SONUC %s: Gazebo konumu okunamadi [%.0f sn]' % (renk, sure))
         return None, sure
 
+    def sim_sn(self):
+        return self.sim
+
     def run(self, renkler):
+        t = time.time()
+        while self.sim == 0.0 and time.time() - t < 5:   # /clock gelsin
+            self.tick()
+        s0 = self.sim_sn()
         t0 = time.time()
         sonuc = []
         for r in renkler:
@@ -353,11 +395,17 @@ class Teslim(Node):
         for r, ok, t in sonuc:
             print('  %-8s %-6s teslim ani: %.0f sn' % (r, {True: 'EVET', False: 'HAYIR', None: '?'}[ok], t))
         toplam = time.time() - t0
-        print('  Toplam: %.0f sn (sinir 480 sn)' % toplam)
+        print('  Toplam: %.0f sn duvar saati' % toplam)
+        if s0 > 0:
+            sim = self.sim_sn() - s0
+            print('  Toplam: %.0f sn SIMULASYON saati (sinir 480 sn)  [hiz orani %%%.0f]' % (sim, 100 * sim / toplam))
+        else:
+            print('  (simulasyon saati okunamadi)')
+        print('  Gorev bitti; robot duruyor, baska komut gonderilmiyor.')
         print('\n===== SURE DAGILIMI =====')
         tur = {}
         for _, _, ad, dt in self.sureler:
-            k = 'Nav2 yaklasma' if ad.startswith('Nav2') else ad
+            k = 'Nav2 yaklasma' if ad.startswith('Nav2') else ('dogrudan yaklasma' if ad.startswith('dogrudan') else ad)
             tur[k] = tur.get(k, 0) + dt
         for k, v in sorted(tur.items(), key=lambda x: -x[1]):
             print('  %-18s %6.0f sn  (%%%.0f)' % (k, v, 100 * v / toplam))

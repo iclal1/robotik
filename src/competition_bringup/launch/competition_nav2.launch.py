@@ -96,7 +96,7 @@ def make_nodes(context):
                           'behavior_server','bt_navigator'])
     nodes.append(Node(package='nav2_lifecycle_manager',
                       executable='lifecycle_manager',name='lifecycle_manager_nav2',
-                      parameters=[{'use_sim_time':True,'autostart':True,
+                      parameters=[{'use_sim_time':True,'autostart':True,'bond_timeout':20.0,
                                    'node_names':lifecycle}],output='screen'))
     return nodes
 
